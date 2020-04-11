@@ -1,0 +1,12 @@
+
+
+body{
+    background-color: black;
+}
+.tablero{
+    background-color: cadetblue;
+}
+.c1 li{
+    display: inline;   
+}
+
