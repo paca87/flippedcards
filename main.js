@@ -10,25 +10,36 @@ Camel cas is the most use
  */
 
 //*************************************Principal
-
-//const dirBack = '/javi/img/back.jpg';
 let score = false;
 let listPictures = [];
 let isSecondCard = false;
-//console.log(document.querySelector('#cantFotos')[0].value);
+let timerEventCardHolder = null;
+let timerPoints = null;
+let timerEndGame = null;
+const timerElement = document.querySelector("#timer");
+let timerCount = 0;
+let scoreElement = document.querySelector("#score");
+let scoreCount = 0;
+let hidedCards = 0;
 crearListaFotos();
 const tablero = document.querySelector(`.table`);
 document.querySelector("#btn").addEventListener("click", newGameHandler);
 setTable();
-console.log(tablero);
-console.log(listPictures);
 
+function resetGame() {
+  clearInterval(timerEventCardHolder);
+  clearInterval(timerPoints);
+  clearInterval(timerEndGame);
+  score = false;
+  isSecondCard = false;
+  timerEventCardHolder = null;
+  timerCount = 0;
+  scoreCount = 0;
+  hidedCards = 0;
+}
 //*************************************Auxiliar
-
-/*Luego tengo q Validar q totalFotos sea Par*/
 function crearListaFotos(totalFotos = 6) {
   listPictures = [];
-
   let cont = 0;
   for (let index = 0; index < totalFotos; index++) {
     const name = `pic${cont}`;
@@ -72,10 +83,26 @@ function setTable() {
   });
 }
 /*
-timer
+EndGame
 */
 function endGame() {
-  //setinterval
+  resetGame();
+  tablero.classList.add("end-game");
+  timerEndGame = setInterval(function () {
+    tablero.innerHTML = tablero.innerHTML ? "" : "CONGRATULATIONS!!";
+  }, 1000);
+}
+/*
+timer
+*/
+function showTime() {
+  timerElement.innerHTML = ++timerCount;
+}
+/*
+score is this ok to 
+*/
+function scorePoint() {
+  scoreElement.innerHTML = ++scoreCount;
 }
 /**
  * Buscar Pareja
@@ -88,6 +115,9 @@ function searchPartner(pic1) {
         if (pic1.name == pic2.name) {
           pic1.hidden = true;
           pic2.hidden = true;
+          if (++hidedCards == listPictures.length / 2) {
+            endGame();
+          }
         }
         pic1.flipped = false;
         pic2.flipped = false;
@@ -105,6 +135,7 @@ function flipCard(id) {
     pic = listPictures[i];
     if (pic.id == id && !pic.flipped) {
       pic.flipped = true;
+      scorePoint();
       break;
     }
   }
@@ -114,12 +145,16 @@ function flipCard(id) {
 let click = tablero.addEventListener("click", (evento) => {
   let target = evento.target;
   if (target.tagName == `IMG`) {
+    if (timerCount == 0) {
+      timerCount++;
+      timerEventCardHolder = setInterval(showTime, 1000);
+    }
     let pic = flipCard(target.id);
     setTable();
     if (isSecondCard) {
       isSecondCard = false;
       tablero.style.pointerEvents = "none";
-      setTimeout(() => {
+      timerPoints = setTimeout(() => {
         searchPartner(pic);
         setTable();
         tablero.style.pointerEvents = "auto";
@@ -132,5 +167,9 @@ let click = tablero.addEventListener("click", (evento) => {
 function newGameHandler() {
   let cantFotos = document.querySelector("#cantFotos").value;
   crearListaFotos(cantFotos);
+  tablero.classList.remove("end-game");
   setTable();
+  resetGame();
+  timerElement.innerHTML = 0;
+  scoreElement.innerHTML = 0;
 }
